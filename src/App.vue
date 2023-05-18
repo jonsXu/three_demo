@@ -1,6 +1,6 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
-import demo from './components/demo2.vue'
+import demo from './components/house360_sphere.vue'
 </script>
 
 <template>

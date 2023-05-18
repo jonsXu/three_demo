@@ -1,3 +1,9 @@
+
+<template>
+  <div  style="width:100%;height:100%">
+    <div id="demo"  style="width:100%;height:100%"></div>
+  </div>
+</template>
 <script setup>
 import { ref,onMounted } from 'vue'
 import * as THREE from 'three'
@@ -53,11 +59,7 @@ onMounted(() => {
 
 </script>
 
-<template>
-  <div  style="width:100%;height:100%">
-    <div id="demo"  style="width:100%;height:100%"></div>
-  </div>
-</template>
+
 
 <style scoped>
 .read-the-docs {

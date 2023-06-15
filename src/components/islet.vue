@@ -10,7 +10,7 @@ import * as THREE from 'three'
 // 轨道控制器
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { Water } from "three/examples/jsm/objects/Water2";
+import { Water } from "three/examples/jsm/objects/Water";
 //导入gltf的载入库
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 // 因为我们的模型是压缩过的，所以需要导入解压的库
@@ -92,6 +92,11 @@ onMounted(() => {
       color: 0xeeeeff, // 水的颜色
       flowDirection: new THREE.Vector2(1, 1), // 流动方向
       scale: 1, // 水的缩放
+      sunDirection: new THREE.Vector3(),
+      sunColor: 0xffffff,
+      waterColor: 0x001e0f,
+      distortionScale: 3.7,
+      fog: scene.fog !== undefined
     }
   )
   water.position.y = 3

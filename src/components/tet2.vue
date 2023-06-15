@@ -10,7 +10,7 @@ import * as THREE from 'three'
 // 轨道控制器
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader';
-import { Water } from "three/examples/jsm/objects/Water2";
+import { Water } from "three/examples/jsm/objects/Water";
 //导入gltf的载入库
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 // 因为我们的模型是压缩过的，所以需要导入解压的库
@@ -24,11 +24,13 @@ const count = ref(0)
 onMounted(() => {
   
   const scene = new THREE.Scene();
-
+  let demo = document.getElementById('demo')
+  let width = demo.clientWidth
+  let height = demo.clientHeight
 // 初始化相机
 const camera = new THREE.PerspectiveCamera(
   75,
-  window.innerWidth / window.innerHeight,
+  width / height,
   0.1,
   2000
 );
@@ -36,7 +38,7 @@ const camera = new THREE.PerspectiveCamera(
 // 设置相机位置
 camera.position.set(-50, 50, 130);
 // 更新摄像头宽高比例
-camera.aspect = window.innerWidth / window.innerHeight;
+camera.aspect = width/ height;
 // 更新摄像头投影矩阵
 camera.updateProjectionMatrix();
 
@@ -52,13 +54,13 @@ const renderer = new THREE.WebGLRenderer({
 renderer.outputEncoding = THREE.sRGBEncoding;
 
 // 设置渲染器宽高
-renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setSize(width, height);
 
 // 监听屏幕的大小改变，修改渲染器的宽高，相机的比例
 window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect = width / height;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(width, height);
 });
 
 // 将渲染器添加到页面
@@ -67,13 +69,7 @@ document.body.appendChild(renderer.domElement);
 // 实例化控制器
 const controls = new OrbitControls(camera, renderer.domElement);
 
-function render() {
-  // 渲染场景
-  renderer.render(scene, camera);
-  // 引擎自动更新渲染器
-  requestAnimationFrame(render);
-}
-render();
+
 
 // 添加平面
 // const planeGeometry = new THREE.PlaneGeometry(100, 100);
@@ -112,7 +108,7 @@ window.addEventListener("click", (e) => {
 
 // 载入环境纹理hdr
 const hdrLoader = new RGBELoader();
-hdrLoader.loadAsync("./img/islet/050.hdr").then((texture) => {
+hdrLoader.loadAsync("./img/islet//050.hdr").then((texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.background = texture;
   scene.environment = texture;
@@ -125,10 +121,16 @@ scene.add(light);
 
 // 创建水面
 const waterGeometry = new THREE.CircleBufferGeometry(300, 64);
-const water = new Water(waterGeometry, {
+var water = new Water(waterGeometry, {
   textureWidth: 1024,
   textureHeight: 1024,
   color: 0xeeeeff,
+  distortionScale: 8,
+  waterNormals: new THREE.TextureLoader().load( './img/islet/waternormals.jpg', function ( texture ) {
+
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+
+    } ),
   flowDirection: new THREE.Vector2(1, 1),
   scale: 1,
 });
@@ -150,6 +152,14 @@ loader.setDRACOLoader(dracoLoader);
 loader.load("./img/islet/model/island2.glb", (gltf) => {
   scene.add(gltf.scene);
 });
+function render() {
+  water.material.uniforms[ 'time' ].value += 1.0 / 60.0;
+  // 渲染场景
+  renderer.render(scene, camera);
+  // 引擎自动更新渲染器
+  requestAnimationFrame(render);
+}
+render();
 })
 
 </script>

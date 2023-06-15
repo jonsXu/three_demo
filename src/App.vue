@@ -1,6 +1,6 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
-import demo from './components/islet.vue'
+import demo from './components/newlet.vue'
 </script>
 
 <template>

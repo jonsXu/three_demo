@@ -1,11 +1,16 @@
 
 <template>
+  <input v-model="state.text" @input="changeText" style="width: 0;
+    height: 0;
+    border: 0;
+    padding: 0;
+    position: absolute;" id="input1"/>
   <div  style="width:100%;height:100%">
     <div id="demo"  style="width:100%;height:100%"></div>
   </div>
 </template>
 <script setup>
-import { ref,onMounted } from 'vue'
+import { ref,onMounted, unref,reactive } from 'vue'
 import * as THREE from 'three'
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 // 轨道控制器
@@ -14,17 +19,52 @@ import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 defineProps({
   msg: String,
 })
-
-const count = ref(0)
-
-function onPointDown(event) {
-  count.value = count.value + 1
+var createText = null
+var refresh = null
+function changeText (){
+  refresh()
 }
-
+const state = reactive({
+    text: '作业帮',
+  })
+  var meshShadow  = null
+  var mesh = null
+function keyDown(even) {
+  // 回车
+  if (even.keyCode === 13) {
+    document.getElementById('input1').focus()
+  }
+}
+window.addEventListener('keydown', keyDown)
 onMounted(() => {
+  
   let demo = document.getElementById('demo')
   let width = demo.clientWidth
   let height = demo.clientHeight
+
+  let text = state.text
+  let pointXDown = 0
+  let pointX = 0
+  let lineRotation = 0
+  let targetRotationOnPointerDown = 0
+  function onPointDown(event) {
+    pointXDown = event.clientX - width/2 // 鼠标点击的位置离中心点的距离
+    targetRotationOnPointerDown = lineRotation
+    demo.addEventListener('pointermove',onPointMove)
+    demo.addEventListener('pointerup',onMouseUp)
+    
+  }
+  function onPointMove(event) {
+    pointX = event.clientX - width/2 // 鼠标移动的位置距离中心点的距离
+    lineRotation = targetRotationOnPointerDown + (pointX - pointXDown) * 0.01 // 点光源旋转点距离 = 当前电光源点位置+  移动距离-原来点距离
+  }
+  function onMouseUp() {
+    debugger
+    demo.removeEventListener( 'pointermove', onPointMove );
+    demo.removeEventListener( 'pointerup', onMouseUp );
+  }
+  demo.addEventListener('mousedown',onPointDown)
+  
   // 创建场景
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000)
@@ -43,7 +83,7 @@ onMounted(() => {
   render.setSize(width, height)
   render.setPixelRatio( window.devicePixelRatio );
    // 初始化控制器
-  const control =  new OrbitControls(camera , render.domElement)
+  //const control =  new OrbitControls(camera , render.domElement)
   //添加到dom
   demo.appendChild(render.domElement)
   
@@ -54,23 +94,24 @@ onMounted(() => {
   // 点光源
   const pointLight = new THREE.PointLight( 0xffffff, 1.5 );
   pointLight.color.setHSL( Math.random(), 1, 0.5 );
-  pointLight.position.set( 0, 100, 90 );
+  pointLight.position.set( 0, 100, 120 );
   scene.add( pointLight );
   // 创建平面
   let plan = new THREE.PlaneGeometry(10000,10000)
   let materialPlan = new THREE.MeshBasicMaterial({color:0xffffff,opacity: 0.5, transparent: true})
   let plane = new THREE.Mesh(plan,materialPlan)
   plane.rotation.x = - Math.PI * 0.5
-  plane.position.y = -50;
+  plane.position.y = 40;
   //plane.position.set(100,100,100)
   scene.add(plane)
 
   let group  = new THREE.Group()
   group.position.y = 100;
+  scene.add(group)
   // 创建字体
 
   // 创建字体几何体
-  let text = '作业帮'
+  
   let font = undefined
   let fontloader = new FontLoader()
 
@@ -79,8 +120,8 @@ onMounted(() => {
     createText()
   })
   
-  function  createText() {
-    let geometry = new TextGeometry(text, {
+  createText = function  () {
+    let geometry = new TextGeometry(state.text, {
       font: font,
       size: 50,
       height: 20,
@@ -99,39 +140,49 @@ onMounted(() => {
 					new THREE.MeshPhongMaterial( { color: 0xffffff, flatShading: true } ), // front
 					new THREE.MeshPhongMaterial( { color: 0xffffff ,flatShading:true} ) // side
 				];
-    let mesh = new THREE.Mesh(geometry, materials)
-    mesh.position.x = -150;
+    mesh = new THREE.Mesh(geometry, materials)
+    mesh.position.x = -120;
     mesh.position.y = -30;
     mesh.position.z = 0;
 
     //mesh.rotation.x = 0;
     //mesh.rotation.y = Math.PI * 2;
-    //group.add( mesh );
-    scene.add(mesh)
+    group.add( mesh );
+    //scene.add(mesh)
     // 做字体倒影
-    let meshShadow = new THREE.Mesh(geometry, materials)
-    meshShadow.position.x = -150;
-    meshShadow.position.y = -80;
-    meshShadow.position.z = 20;
+    meshShadow = new THREE.Mesh(geometry, materials)
+    meshShadow.position.x = -120;
+    meshShadow.position.y = -65;
+    meshShadow.position.z = 10;
     meshShadow.rotation.x = Math.PI;
-    scene.add(meshShadow)
+    group.add( meshShadow );
+    //scene.add(meshShadow)
+  }
+  refresh = function () {
+    group.remove(mesh)
+    group.remove(meshShadow)
+    createText()
   }
   function renderD() {
     //颜色渐变
     pointLight.color.setHSL((new Date()).getSeconds()/100, 1, 0.5 );
     //camera.lookAt( cameraTarget );
-    requestAnimationFrame(renderD)
     
-    
-    //group.rotation.y += ( 0 - group.rotation.y ) * 0.05;
-   
+    group.rotation.y += ( lineRotation - group.rotation.y ) * 0.005;
+    render.clear()
+
     // 使用渲染器，通过相机将场景渲染
     render.render(scene,camera)
     //浏览器api ，请求动画函数
     
   }
-  renderD()
+  function animation () {
+    requestAnimationFrame(animation)
+    renderD()
+  }
+  animation()
 })
+
 
 </script>
 

@@ -108,7 +108,7 @@ window.addEventListener("click", (e) => {
 
 // 载入环境纹理hdr
 const hdrLoader = new RGBELoader();
-hdrLoader.loadAsync("./img/islet//050.hdr").then((texture) => {
+hdrLoader.loadAsync("./img/islet/050.hdr").then((texture) => {
   texture.mapping = THREE.EquirectangularReflectionMapping;
   scene.background = texture;
   scene.environment = texture;

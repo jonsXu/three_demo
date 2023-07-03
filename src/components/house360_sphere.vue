@@ -43,7 +43,7 @@ onMounted(() => {
   const geometry = new THREE.SphereGeometry(5,32,16)
  
   let loader = new RGBELoader ()
-  loader.loadAsync('./img/hdr/Living2.hdr').then(texture =>{
+  loader.loadAsync('./img/hdr/Living.hdr').then(texture =>{
      // 加载hdr贴图，需要使用经纬贴图,不能当作一个普通图片贴图
     texture.mapping = THREE.EquirectangularReflectionMapping  // 设置经纬度贴图
     const material = new THREE.MeshBasicMaterial({map: texture}) 
